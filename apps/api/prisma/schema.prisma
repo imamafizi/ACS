@@ -1,0 +1,67 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Sample {
+  id        Int      @id @default(autoincrement())
+  name      String
+  code      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("samples") // if you want to use snake_case format
+}
+
+model User {
+
+  id             Int              @id @default(autoincrement())
+  email          String           @unique
+  firstName      String
+  lastName       String
+  referralCode   String           @unique
+  password       String           @unique
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  isDeleted      Boolean          @default(false)
+  role           Role?
+  CouponDiscount CouponDiscount?
+  ReferralPoints ReferralPoints[] @relation("Referrer")
+
+}
+
+model Role {
+  id     Int    @id @default(autoincrement())
+  name   String
+  userId Int    @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+}
+
+model CouponDiscount {
+  id                 Int      @id @default(autoincrement())
+  userId             Int      @unique
+  user               User     @relation(fields: [userId], references: [id])
+  couponCode         String
+  discountPersentase Int
+  dateReceived       DateTime @default(now())
+  expiresOn          DateTime
+}
+
+model ReferralPoints {
+  id             Int      @id @default(autoincrement())
+  referrerUserId Int
+  referredUserId Int      @unique
+  pointEarned    Int
+  dateEarned     DateTime @default(now())
+  expiresOn      DateTime
+  referrerUser   User     @relation("Referrer", fields: [referrerUserId], references: [id])
+
+}
